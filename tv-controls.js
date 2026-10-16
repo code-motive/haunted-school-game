@@ -1,12 +1,15 @@
-// Register Tizen TV Remote hardware keys if running inside a Tizen container
+// Register Samsung Tizen hardware keys safely across all firmware versions
 if (window.tizen && window.tizen.tvinputdevice) {
   try {
-    tizen.tvinputdevice.registerKey("MediaPlay");
-    tizen.tvinputdevice.registerKey("MediaPause");
-    tizen.tvinputdevice.registerKey("ChannelUp");
-    tizen.tvinputdevice.registerKey("ChannelDown");
+    const keysToRegister = [
+      "MediaPlay", "MediaPause", "ColorF0Red", "ColorF1Green", 
+      "ColorF2Yellow", "ColorF3Blue", "ChannelUp", "ChannelDown"
+    ];
+    keysToRegister.forEach(key => {
+      try { tizen.tvinputdevice.registerKey(key); } catch (err) {}
+    });
   } catch (e) {
-    console.log("Tizen input device registration skipped or not supported in browser mode.");
+    console.log("Tizen input device registration not required in standard browser mode.");
   }
 }
 
@@ -19,69 +22,82 @@ const remoteState = {
   actionPressed: false
 };
 
-// Ensure window has focus so TV browser captures remote keys immediately
+// Ensure window & canvas capture focus immediately on TV browsers
 window.addEventListener('load', () => {
   window.focus();
   document.body.focus();
+  const canvas = document.querySelector('canvas');
+  if (canvas) canvas.focus();
 });
 
 window.addEventListener('click', () => {
   window.focus();
 });
 
-// Key Down Event Listener
+// Comprehensive Universal Key Map for Samsung TV Remotes
 window.addEventListener("keydown", (e) => {
-  // Prevent default scrolling behavior for TV remote arrow keys
-  if ([37, 38, 39, 40, 13].includes(e.keyCode)) {
+  const code = e.keyCode || e.which;
+  const key = e.key;
+
+  // Prevent default page scrolling on TV browsers for navigation keys
+  if ([13, 37, 38, 39, 40, 29460, 29461, 10009].includes(code) || 
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(key)) {
     e.preventDefault();
   }
 
-  switch (e.keyCode) {
-    case 38: // D-Pad Up -> Move Forward
-      remoteState.forward = true;
-      break;
-    case 40: // D-Pad Down -> Move Backward
-      remoteState.backward = true;
-      break;
-    case 37: // D-Pad Left -> Turn Left
-      remoteState.turnLeft = true;
-      break;
-    case 39: // D-Pad Right -> Turn Right
-      remoteState.turnRight = true;
-      break;
-    case 13: // Enter / Center OK Button -> Interact with Definition Box
-      remoteState.actionPressed = true;
-      if (typeof handleTVInteraction === "function") {
-        handleTVInteraction();
-      }
-      break;
-    case 10009: // Return / Back Button on Samsung TV Remote
-      if (window.tizen) {
+  // Map directional keys (Supports Arrow keys, Numeric D-Pads, and WebKit TV codes)
+  if (code === 38 || key === 'ArrowUp' || code === 29460 || key === 'Up') {
+    remoteState.forward = true;
+  }
+  if (code === 40 || key === 'ArrowDown' || code === 29461 || key === 'Down') {
+    remoteState.backward = true;
+  }
+  if (code === 37 || key === 'ArrowLeft' || code === 29459 || key === 'Left') {
+    remoteState.turnLeft = true;
+  }
+  if (code === 39 || key === 'ArrowRight' || code === 29462 || key === 'Right') {
+    remoteState.turnRight = true;
+  }
+
+  // Select / OK / Enter / Play buttons (Triggers interaction)
+  if (code === 13 || key === 'Enter' || key === 'Select' || code === 1025 || code === 415) {
+    remoteState.actionPressed = true;
+    if (typeof handleTVInteraction === "function") {
+      handleTVInteraction();
+    }
+  }
+
+  // Universal Back / Return button support (Samsung Tizen 10009, WebKit 8, ESC 27)
+  if (code === 10009 || code === 8 || code === 27 || key === 'Escape' || key === 'GoBack') {
+    if (window.tizen && window.tizen.application) {
+      try {
         tizen.application.getCurrentApplication().exit();
-      } else {
-        console.log("Exit requested via Remote Return button.");
+      } catch (err) {
+        history.back();
       }
-      break;
+    } else {
+      history.back();
+    }
   }
 });
 
-// Key Up Event Listener (Stops movement immediately when remote button is released)
 window.addEventListener("keyup", (e) => {
-  switch (e.keyCode) {
-    case 38: 
-      remoteState.forward = false; 
-      break;
-    case 40: 
-      remoteState.backward = false; 
-      break;
-    case 37: 
-      remoteState.turnLeft = false; 
-      break;
-    case 39: 
-      remoteState.turnRight = false; 
-      break;
-    case 13: 
-      remoteState.actionPressed = false; 
-      break;
+  const code = e.keyCode || e.which;
+  const key = e.key;
+
+  if (code === 38 || key === 'ArrowUp' || code === 29460 || key === 'Up') {
+    remoteState.forward = false;
+  }
+  if (code === 40 || key === 'ArrowDown' || code === 29461 || key === 'Down') {
+    remoteState.backward = false;
+  }
+  if (code === 37 || key === 'ArrowLeft' || code === 29459 || key === 'Left') {
+    remoteState.turnLeft = false;
+  }
+  if (code === 39 || key === 'ArrowRight' || code === 29462 || key === 'Right') {
+    remoteState.turnRight = false;
+  }
+  if (code === 13 || key === 'Enter' || key === 'Select' || code === 1025 || code === 415) {
+    remoteState.actionPressed = false;
   }
 });
