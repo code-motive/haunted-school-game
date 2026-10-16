@@ -1,1 +1,1253 @@
+```html
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>અર્થશાસ્ત્ર વ્યાખ્યા Quest (3D)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Segoe UI', 'Courier New', 'Noto Sans Gujarati', sans-serif;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #02040a;
+            touch-action: none;
+        }
 
+        /* Compact Top HUD Bar */
+        #ui-header {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            color: #ffffff;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .ui-panel {
+            background: rgba(8, 14, 28, 0.85);
+            border: 1px solid rgba(0, 225, 255, 0.3);
+            border-radius: 8px;
+            padding: 6px 10px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+        }
+        .ui-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 13px; 
+            color: #ff5555; 
+            text-shadow: 0 0 6px #ff0000; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge {
+            background: linear-gradient(135deg, #cc0033, #770022);
+            border: 1px solid #ff4444;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .select-input {
+            background: linear-gradient(135deg, #0088cc, #003366);
+            border: 1px solid #00ccff;
+            padding: 3px 6px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .select-input option {
+            background: #080e1c;
+            color: #00ffff;
+        }
+
+        /* Compact Target Display & Compass */
+        #target-word-banner {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #ffddaa;
+            margin-top: 2px;
+        }
+        #next-word-highlight {
+            font-size: 13px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 8px #00ffff;
+            background: rgba(0, 225, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid #00ffff;
+        }
+
+        /* Compact Sentence Display */
+        #sentence-box {
+            padding: 4px 8px;
+            background: rgba(5, 8, 16, 0.85);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #aaeeff;
+            line-height: 1.3;
+            max-height: 48px;
+            overflow-y: auto;
+            word-wrap: break-word;
+        }
+        .collected-tag {
+            color: #55ff99;
+            font-weight: bold;
+            text-shadow: 0 0 4px #00ff66;
+            margin-right: 3px;
+        }
+
+        /* Compass Widget */
+        #compass-widget {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(10, 15, 30, 0.8);
+            border: 1.5px solid #00ffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 15;
+        }
+        #compass-arrow {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 16px solid #ffaa00;
+            filter: drop-shadow(0 0 4px #ffaa00);
+            transform-origin: 50% 80%;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Minimalistic Controls Overlay */
+        #joystick-zone {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(0, 225, 255, 0.3);
+            border-radius: 50%;
+            z-index: 15;
+            touch-action: none;
+        }
+        #joystick-knob {
+            position: absolute;
+            top: 22px;
+            left: 22px;
+            width: 36px;
+            height: 36px;
+            background: radial-gradient(circle, #00ffff 0%, rgba(0,200,255,0.4) 100%);
+            border: 1.5px solid #00ffff;
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 8px #00ffff;
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(8, 12, 22, 0.6);
+            border: 1px solid rgba(255, 85, 85, 0.3);
+            color: #aaaaaa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            pointer-events: none;
+            text-align: right;
+            line-height: 1.2;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Toast Message */
+        #toast-msg {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 85, 0.92);
+            border: 1px solid #ffaaee;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+            z-index: 25;
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.6);
+            pointer-events: none;
+            text-align: center;
+            max-width: 85%;
+        }
+
+        /* Win Modal */
+        #win-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 8, 18, 0.94);
+            color: #00ffcc;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            font-size: 18px;
+            text-align: center;
+            padding: 16px;
+        }
+        .win-card {
+            background: rgba(12, 22, 40, 0.95);
+            border: 2px solid #00ffcc;
+            padding: 20px;
+            border-radius: 14px;
+            max-width: 550px;
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.3);
+        }
+        .btn-next {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #00cc88, #006644);
+            border: 1px solid #00ffaa;
+            color: #ffffff;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,170,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="ui-header">
+        <div class="ui-panel">
+            <div class="ui-row">
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <select id="def-select" class="select-input" onchange="changeDefinitionFromSelect(this.value)">
+                        <option value="demand">૧. માંગની વ્યાખ્યા</option>
+                        <option value="supply">૨. પુરવઠાની વ્યાખ્યા</option>
+                        <option value="kautilya">૩. કૌટિલ્યની અર્થશાસ્ત્ર વ્યાખ્યા</option>
+                        <option value="law_demand">૪. માંગનો નિયમ</option>
+                    </select>
+
+                    <select id="level-select" class="select-input" onchange="changeLevelFromSelect(this.value)">
+                        <option value="1">લેવલ ૧</option>
+                        <option value="2">લેવલ ૨</option>
+                        <option value="3">લેવલ ૩</option>
+                        <option value="4">લેવલ ૪</option>
+                        <option value="5">લેવલ ૫</option>
+                    </select>
+
+                    <h1 id="level-title">સાચી વ્યાખ્યા શોધો</h1>
+                </div>
+                <div class="badge" id="progress-count">0 / 0</div>
+            </div>
+
+            <div id="target-word-banner">
+                <span>આગામી શબ્દ:</span>
+                <span id="next-word-highlight">કોઈ</span>
+                <span id="compass-text-hint" style="font-size: 10px; opacity: 0.7;">(તીર દશા દર્શાવે છે ↗️)</span>
+            </div>
+        </div>
+
+        <div id="sentence-box">
+            વ્યાખ્યા: <span id="current-sentence" style="color: #88aaee;">હજી શરૂઆત નથી કરી...</span>
+        </div>
+    </div>
+
+    <!-- Directional Arrow Widget -->
+    <div id="compass-widget">
+        <div id="compass-arrow"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-msg">ખોટો શબ્દ!</div>
+
+    <!-- Joystick for Mobile -->
+    <div id="joystick-zone">
+        <div id="joystick-knob"></div>
+    </div>
+
+    <div id="controls-hint">
+        <b>WASD / Joystick:</b> ચલાવો | <b>Drag:</b> કેમેરા | <b>Tap:</b> શબ્દ ચૂંટો
+    </div>
+
+    <!-- Win Screen Modal -->
+    <div id="win-screen">
+        <div class="win-card">
+            <div id="win-heading" style="font-size: 24px; margin-bottom: 8px; color: #ffdd44; text-shadow: 0 0 12px #ffaa00;">
+                👻 લેવલ પૂર્ણ થયું!
+            </div>
+            <div id="win-full-def" style="color: #ffffff; font-size: 14px; line-height: 1.6; margin: 12px 0; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border-left: 3px solid #00ffcc;">
+                ...
+            </div>
+            <p id="win-subtext" style="font-size: 13px; color: #ff99aa;">તમે આગામી પડકાર માટે તૈયાર છો?</p>
+            <button class="btn-next" id="next-lvl-btn" onclick="nextLevel()">આગળનું લેવલ રમો ➔</button>
+        </div>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // --- 1. DEFINITIONS DATASET ---
+        const definitionsData = {
+            demand: {
+                title: "માગની વ્યાખ્યા",
+                theme: "school", // Haunted School
+                targetSequence: [
+                    "કોઈ", "એક", "ચોક્કસ", "સમયે", "અને",
+                    "કિંમતે", "ગ્રાહકની", "વસ્તુ", "ખરીદવાની", "ઈચ્છા",
+                    "શક્તિ", "અને", "તૈયારી", "એટલે", " માંગ"
+                ],
+                decoyWords: ["પુરવઠો", "બજાર", "કિંમત", "વેચાણ", "નફો", "આવક", "ઉત્પાદન"],
+                fullText: '"કોઈ એક ચોક્કસ સમયે અને કિંમતે ગ્રાહકની વસ્તુ ખરીદવાની ઈચ્છા શક્તિ અને તૈયારી એટલે માંગ"'
+            },
+            supply: {
+                title: "પુરવઠાની વ્યાખ્યા",
+                theme: "market", // Village Market
+                targetSequence: [
+                    "કોઈ", "ચોક્કસ", "કિંમતે", "ઉત્પાદકોની", "વસ્તુ",
+                    "વેચવાની", "ઈચ્છા", "શક્તિ", "અને", "તૈયારી", "એટલે", "પુરવઠો"
+                ],
+                decoyWords: ["ગ્રાહક", "માંગ", "આવક", "નફો", "ખરીદી", "બજાર", "જથ્થો"],
+                fullText: '"કોઈ ચોક્કસ કિંમતે ઉત્પાદકોની વસ્તુ વેચવાની ઈચ્છા શક્તિ અને તૈયારી એટલે પુરવઠો"'
+            },
+            kautilya: {
+                title: "અર્થશાસ્ત્ર ની કૌટિલ્ય ની વ્યાખ્યા",
+                theme: "jungle", // Ancient Jungle
+                targetSequence: [
+                    "મનુષ્યની", "વૃત્તિ", "અર્થ", "છે", "મનુષ્યના",
+                    "વસવાટ", "વાળી", "ભૂમિ", "અર્થ", "છે",
+                    "તેવી", "ભૂમિના", "લાભ", "પાલનના", "ઉપાયો",
+                    "દર્શાવતું", "શાસ્ત્ર", "એટલે", "અર્થશાસ્ત્ર"
+                ],
+                decoyWords: ["રાજશાસ્ત્ર", "સમાજ", "સંપત્તિ", "કલ્યાણ", "નિયમ", "ઉત્પાદન"],
+                fullText: '"મનુષ્યની વૃત્તિ અર્થ છે મનુષ્યના વસવાટ વાળી ભૂમિ અર્થ છે તેવી ભૂમિના લાભ પાલનના ઉપાયો દર્શાવતું શાસ્ત્ર એટલે અર્થશાસ્ત્ર"'
+            },
+            law_demand: {
+                title: "માંગનો નિયમ",
+                theme: "school", // Haunted Courtyard
+                targetSequence: [
+                    "જો", "અન્ય", "પરિબળો", "યથાવત", "રહે",
+                    "તો", "વસ્તુની", "કિંમત", "ઘટતાં", "માંગનું",
+                    "વિસ્તરણ", "થાય", "અને", "વસ્તુની", "કિંમત",
+                    "વધતાં", "માંગનું", "સંકોચન", "થાય", "છે",
+                    "આમ", "માંગ", "અને", "કિંમત", "વચ્ચે", "વ્યસ્ત", "સંબંધ", "છે"
+                ],
+                decoyWords: ["સમપ્રમાણ", "પુરવઠો", "સ્થિર", "પરિવર્તન", "બજાર"],
+                fullText: '"જો અન્ય પરિબળો યથાવત રહે તો વસ્તુની કિંમત ઘટતાં માંગનું વિસ્તરણ થાય અને વસ્તુની કિંમત વધતાં માંગનું સંકોચન થાય છે આમ માંગ અને કિંમત વચ્ચે વ્યસ્ત સંબંધ છે"'
+            }
+        };
+
+        let currentDefKey = "demand";
+        let currentLevel = 1;
+        let currentIndex = 0;
+        let collectedWords = [];
+        let wordObjects = [];
+        let obstacleColliders = [];
+        let isProcessingPenalty = false;
+
+        // --- 2. THREE.JS SCENE SETUP ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x02040a);
+        scene.fog = new THREE.FogExp2(0x030612, 0.022);
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        document.body.appendChild(renderer.domElement);
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Ambient & Directional Lighting
+        const ambientLight = new THREE.AmbientLight(0x2a3650, 1.4);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0x5588cc, 1.6);
+        mainLight.position.set(35, 60, 25);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 1024;
+        mainLight.shadow.mapSize.height = 1024;
+        const d = 45;
+        mainLight.shadow.camera.left = -d;
+        mainLight.shadow.camera.right = d;
+        mainLight.shadow.camera.top = d;
+        mainLight.shadow.camera.bottom = -d;
+        scene.add(mainLight);
+
+        // Ground Mesh
+        const groundGeo = new THREE.PlaneGeometry(100, 100, 32, 32);
+        const groundMat = new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0.1 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Group Containers for Environment Props
+        const envPropsGroup = new THREE.Group();
+        scene.add(envPropsGroup);
+
+        const obstacleGroup = new THREE.Group();
+        scene.add(obstacleGroup);
+
+        // --- 3. DYNAMIC PROCEDURAL ENVIRONMENT BUILDER ---
+        function generateProceduralTexture(type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            if (type === 'market') {
+                // Village Mud & Straw Floor
+                ctx.fillStyle = '#2b1d0e';
+                ctx.fillRect(0, 0, 512, 512);
+                for (let i = 0; i < 600; i++) {
+                    ctx.fillStyle = Math.random() > 0.5 ? '#3a2815' : '#1e1307';
+                    ctx.fillRect(Math.random()*512, Math.random()*512, Math.random()*12+2, Math.random()*12+2);
+                }
+            } else if (type === 'jungle') {
+                // Jungle Moss & Earth
+                ctx.fillStyle = '#0f1f0a';
+                ctx.fillRect(0, 0, 512, 512);
+                for (let i = 0; i < 800; i++) {
+                    ctx.fillStyle = Math.random() > 0.4 ? '#183311' : '#081205';
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*512, Math.random()*512, Math.random()*8+2, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            } else {
+                // Haunted Courtyard Stone Tiles
+                ctx.fillStyle = '#111622';
+                ctx.fillRect(0, 0, 512, 512);
+                const tileSize = 32;
+                for (let x = 0; x < 512; x += tileSize) {
+                    for (let y = 0; y < 512; y += tileSize) {
+                        const noise = (Math.random() - 0.5) * 20;
+                        ctx.fillStyle = `rgb(${18 + noise}, ${24 + noise}, ${36 + noise})`;
+                        ctx.fillRect(x + 1, y + 1, tileSize - 2, tileSize - 2);
+                    }
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(12, 12);
+            return texture;
+        }
+
+        const flickeringLights = [];
+
+        function buildEnvironment(theme) {
+            // Clear previous env props
+            while(envPropsGroup.children.length > 0) {
+                envPropsGroup.remove(envPropsGroup.children[0]);
+            }
+            flickeringLights.length = 0;
+
+            groundMat.map = generateProceduralTexture(theme);
+            groundMat.needsUpdate = true;
+
+            if (theme === 'market') {
+                // VILLAGE MARKET ENVIRONMENT
+                scene.background.setHex(0x0c0702);
+                scene.fog.color.setHex(0x0c0702);
+                ambientLight.color.setHex(0x664422);
+                mainLight.color.setHex(0xffaa55);
+
+                const stallMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e, roughness: 0.9 });
+                const clothMat = new THREE.MeshStandardMaterial({ color: 0xb53c2a, roughness: 0.6 });
+
+                for (let x = -30; x <= 30; x += 20) {
+                    for (let z = -30; z <= 30; z += 30) {
+                        const stall = new THREE.Group();
+                        stall.position.set(x, 0, z);
+
+                        const roof = new THREE.Mesh(new THREE.ConeGeometry(2.5, 1.2, 4), clothMat);
+                        roof.position.y = 3.2;
+                        roof.rotation.y = Math.PI / 4;
+                        stall.add(roof);
+
+                        const table = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 1.8), stallMat);
+                        table.position.y = 0.8;
+                        stall.add(table);
+
+                        envPropsGroup.add(stall);
+
+                        const lantern = new THREE.PointLight(0xffaa22, 2.0, 12);
+                        lantern.position.set(x, 2.8, z);
+                        envPropsGroup.add(lantern);
+                        flickeringLights.push(lantern);
+                    }
+                }
+            } else if (theme === 'jungle') {
+                // ANCIENT JUNGLE ENVIRONMENT
+                scene.background.setHex(0x020a04);
+                scene.fog.color.setHex(0x020a04);
+                ambientLight.color.setHex(0x225533);
+                mainLight.color.setHex(0x44aa77);
+
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3a2512, roughness: 0.95 });
+                const leafMat = new THREE.MeshStandardMaterial({ color: 0x114411, roughness: 0.8 });
+
+                for (let x = -35; x <= 35; x += 15) {
+                    for (let z = -35; z <= 35; z += 15) {
+                        if (Math.abs(x) < 8 && Math.abs(z) < 8) continue;
+                        const tree = new THREE.Group();
+                        tree.position.set(x + (Math.random()-0.5)*4, 0, z + (Math.random()-0.5)*4);
+
+                        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 7, 8), trunkMat);
+                        trunk.position.y = 3.5;
+                        tree.add(trunk);
+
+                        const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(2.5), leafMat);
+                        leaves.position.y = 6.8;
+                        tree.add(leaves);
+
+                        envPropsGroup.add(tree);
+                    }
+                }
+            } else {
+                // HAUNTED SCHOOL COURTYARD
+                scene.background.setHex(0x02040a);
+                scene.fog.color.setHex(0x030612);
+                ambientLight.color.setHex(0x2a3650);
+                mainLight.color.setHex(0x5588cc);
+
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x161d2b, roughness: 0.7 });
+                for (let x = -30; x <= 30; x += 20) {
+                    for (let z = -30; z <= 30; z += 30) {
+                        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 8.5, 10), pillarMat);
+                        pillar.position.set(x, 4.25, z);
+                        envPropsGroup.add(pillar);
+
+                        const torchLight = new THREE.PointLight(0xff7700, 1.8, 14);
+                        torchLight.position.set(x, 5.2, z + (z < 0 ? 1.2 : -1.2));
+                        envPropsGroup.add(torchLight);
+                        flickeringLights.push(torchLight);
+                    }
+                }
+            }
+        }
+
+        // --- 4. SLOTH HERO "MD" (MOTIVE DHYAAN) DETAILED 3D CHARACTER MODEL ---
+        const avatarGroup = new THREE.Group();
+
+        const furMat = new THREE.MeshStandardMaterial({ color: 0x8B5E2B, roughness: 0.88, metalness: 0.05 });
+        const darkFurMat = new THREE.MeshStandardMaterial({ color: 0x5C3B1E, roughness: 0.9, metalness: 0.05 });
+        const muzzleMat = new THREE.MeshStandardMaterial({ color: 0xF4E0B8, roughness: 0.75 });
+        const capeMat = new THREE.MeshStandardMaterial({ color: 0xD62828, roughness: 0.45, side: THREE.DoubleSide });
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xF2C94C, metalness: 0.8, roughness: 0.25 });
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0x1A1A1A, metalness: 0.95, roughness: 0.1 });
+        const clawMat = new THREE.MeshStandardMaterial({ color: 0xE8E8E8, roughness: 0.25, metalness: 0.1 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3 });
+
+        // Torso
+        const bodyGeo = new THREE.SphereGeometry(0.65, 24, 24);
+        bodyGeo.scale(1, 1.25, 0.9);
+        const slothBody = new THREE.Mesh(bodyGeo, furMat);
+        slothBody.position.y = 1.0;
+        slothBody.castShadow = true;
+        avatarGroup.add(slothBody);
+
+        // Belly
+        const bellyGeo = new THREE.SphereGeometry(0.5, 16, 16);
+        bellyGeo.scale(0.85, 1.1, 0.4);
+        const slothBelly = new THREE.Mesh(bellyGeo, muzzleMat);
+        slothBelly.position.set(0, 0.95, 0.38);
+        avatarGroup.add(slothBelly);
+
+        // Head
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 1.75, 0.05);
+
+        const headGeo = new THREE.SphereGeometry(0.52, 24, 24);
+        headGeo.scale(1.1, 0.95, 1.0);
+        const slothHead = new THREE.Mesh(headGeo, furMat);
+        slothHead.castShadow = true;
+        headGroup.add(slothHead);
+
+        const muzzleGeo = new THREE.SphereGeometry(0.32, 16, 16);
+        muzzleGeo.scale(1.1, 0.8, 0.7);
+        const slothMuzzle = new THREE.Mesh(muzzleGeo, muzzleMat);
+        slothMuzzle.position.set(0, -0.1, 0.32);
+        headGroup.add(slothMuzzle);
+
+        const noseGeo = new THREE.SphereGeometry(0.08, 12, 12);
+        noseGeo.scale(1.3, 0.8, 0.9);
+        const slothNose = new THREE.Mesh(noseGeo, blackMat);
+        slothNose.position.set(0, -0.06, 0.52);
+        headGroup.add(slothNose);
+
+        [-0.18, 0.18].forEach(xVal => {
+            const patchGeo = new THREE.SphereGeometry(0.14, 12, 12);
+            patchGeo.scale(1.0, 0.7, 0.3);
+            const eyePatch = new THREE.Mesh(patchGeo, darkFurMat);
+            eyePatch.position.set(xVal, 0.02, 0.42);
+            eyePatch.rotation.z = xVal > 0 ? -0.2 : 0.2;
+            headGroup.add(eyePatch);
+        });
+
+        // Sunglasses
+        const glassesGroup = new THREE.Group();
+        glassesGroup.position.set(0, 0.06, 0.45);
+        const frameBridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.06), blackMat);
+        frameBridge.position.set(0, 0.04, 0.02);
+        glassesGroup.add(frameBridge);
+
+        [-0.2, 0.2].forEach(xOffset => {
+            const lensGeo = new THREE.CylinderGeometry(0.16, 0.14, 0.06, 16);
+            lensGeo.rotateX(Math.PI / 2);
+            const lens = new THREE.Mesh(lensGeo, glassMat);
+            lens.position.set(xOffset, 0.02, 0);
+            glassesGroup.add(lens);
+        });
+        headGroup.add(glassesGroup);
+        avatarGroup.add(headGroup);
+
+        // MD Badge Shield
+        const badgeGroup = new THREE.Group();
+        badgeGroup.position.set(0, 1.12, 0.52);
+        const shieldShape = new THREE.Shape();
+        shieldShape.moveTo(0, 0.22);
+        shieldShape.lineTo(0.18, 0.12);
+        shieldShape.lineTo(0.15, -0.15);
+        shieldShape.lineTo(0, -0.25);
+        shieldShape.lineTo(-0.15, -0.15);
+        shieldShape.lineTo(-0.18, 0.12);
+        shieldShape.closePath();
+
+        const shieldGeo = new THREE.ExtrudeGeometry(shieldShape, { depth: 0.05, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.02, bevelThickness: 0.02 });
+        const badgeMesh = new THREE.Mesh(shieldGeo, goldMat);
+        badgeGroup.add(badgeMesh);
+
+        const badgeCanvas = document.createElement('canvas');
+        badgeCanvas.width = 128; badgeCanvas.height = 128;
+        const bCtx = badgeCanvas.getContext('2d');
+        bCtx.fillStyle = '#F2C94C'; bCtx.fillRect(0, 0, 128, 128);
+        bCtx.fillStyle = '#5C3B1E'; bCtx.font = 'Bold 70px "Segoe UI", sans-serif';
+        bCtx.textAlign = 'center'; bCtx.textBaseline = 'middle';
+        bCtx.fillText('MD', 64, 64);
+
+        const badgeTex = new THREE.CanvasTexture(badgeCanvas);
+        const badgeFrontPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.24), new THREE.MeshBasicMaterial({ map: badgeTex, transparent: true }));
+        badgeFrontPlane.position.set(0, -0.02, 0.08);
+        badgeGroup.add(badgeFrontPlane);
+        avatarGroup.add(badgeGroup);
+
+        // Cape
+        const slothCape = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 1.25, 12, 12), capeMat);
+        slothCape.position.set(0, 0.95, -0.42);
+        slothCape.rotation.x = 0.22;
+        avatarGroup.add(slothCape);
+
+        // Limbs
+        const armGeo = new THREE.CylinderGeometry(0.16, 0.13, 0.75, 12);
+        const leftArmGroup = new THREE.Group(); leftArmGroup.position.set(-0.62, 1.2, 0.05);
+        const leftArmMesh = new THREE.Mesh(armGeo, furMat); leftArmMesh.position.y = -0.32; leftArmGroup.add(leftArmMesh);
+        for (let c = -1; c <= 1; c++) {
+            const claw = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.22, 8).rotateX(-Math.PI / 3), clawMat);
+            claw.position.set(c * 0.06, -0.7, 0.08); leftArmGroup.add(claw);
+        }
+        avatarGroup.add(leftArmGroup);
+
+        const rightArmGroup = new THREE.Group(); rightArmGroup.position.set(0.62, 1.2, 0.05);
+        const rightArmMesh = new THREE.Mesh(armGeo, furMat); rightArmMesh.position.y = -0.32; rightArmGroup.add(rightArmMesh);
+        for (let c = -1; c <= 1; c++) {
+            const claw = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.22, 8).rotateX(-Math.PI / 3), clawMat);
+            claw.position.set(c * 0.06, -0.7, 0.08); rightArmGroup.add(claw);
+        }
+        avatarGroup.add(rightArmGroup);
+
+        const legGeo = new THREE.CylinderGeometry(0.18, 0.15, 0.5, 12);
+        const leftLegGroup = new THREE.Group(); leftLegGroup.position.set(-0.3, 0.45, 0);
+        const leftLegMesh = new THREE.Mesh(legGeo, furMat); leftLegMesh.position.y = -0.2; leftLegGroup.add(leftLegMesh);
+        for (let c = -1; c <= 1; c++) {
+            const claw = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.18, 8).rotateX(-Math.PI / 2.5), clawMat);
+            claw.position.set(c * 0.06, -0.42, 0.12); leftLegGroup.add(claw);
+        }
+        avatarGroup.add(leftLegGroup);
+
+        const rightLegGroup = new THREE.Group(); rightLegGroup.position.set(0.3, 0.45, 0);
+        const rightLegMesh = new THREE.Mesh(legGeo, furMat); rightLegMesh.position.y = -0.2; rightLegGroup.add(rightLegMesh);
+        for (let c = -1; c <= 1; c++) {
+            const claw = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.18, 8).rotateX(-Math.PI / 2.5), clawMat);
+            claw.position.set(c * 0.06, -0.42, 0.12); rightLegGroup.add(claw);
+        }
+        avatarGroup.add(rightLegGroup);
+
+        avatarGroup.position.set(0, 0.2, 20);
+        scene.add(avatarGroup);
+
+        // --- 5. WORD SPRITE GENERATOR & SPAWNING ---
+        const sharedPlaneGeo = new THREE.PlaneGeometry(4.8, 1.3);
+
+        function createGujaratiWord3D(wordText, index, isTarget) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 140;
+
+            function drawCard(revealed, textToDisplay) {
+                ctx.clearRect(0, 0, 512, 140);
+                if (isTarget) {
+                    ctx.fillStyle = 'rgba(6, 12, 28, 0.92)';
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath(); ctx.roundRect(12, 12, 488, 116, 18); ctx.fill(); ctx.stroke();
+
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.font = 'Bold 30px "Segoe UI", sans-serif';
+                    ctx.fillText(revealed ? `#${index + 1}` : '?', 30, 75);
+
+                    ctx.font = 'Bold 40px "Segoe UI", "Noto Sans Gujarati", sans-serif';
+                    ctx.fillStyle = revealed ? '#ffffff' : '#6688aa';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(textToDisplay, 280, 70);
+                } else {
+                    ctx.fillStyle = 'rgba(25, 8, 12, 0.88)';
+                    ctx.strokeStyle = '#ff3355';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath(); ctx.roundRect(12, 12, 488, 116, 18); ctx.fill(); ctx.stroke();
+
+                    ctx.font = 'Bold 38px "Segoe UI", "Noto Sans Gujarati", sans-serif';
+                    ctx.fillStyle = revealed ? '#ff6677' : '#aa4455';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(textToDisplay, 256, 70);
+                }
+            }
+
+            drawCard(true, wordText);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(sharedPlaneGeo, mat);
+
+            mesh.userData = { 
+                word: wordText, 
+                index: index, 
+                isTarget: isTarget,
+                initialPos: new THREE.Vector3(),
+                canvas: canvas,
+                texture: texture,
+                drawCard: drawCard,
+                isRevealed: false
+            };
+            return mesh;
+        }
+
+        function spawnDefinitionWords() {
+            // Clear current words from scene
+            wordObjects.forEach(m => scene.remove(m));
+            wordObjects.length = 0;
+
+            const defObj = definitionsData[currentDefKey];
+            const targetWords = defObj.targetSequence;
+            const decoys = defObj.decoyWords;
+
+            targetWords.forEach((wordText, idx) => {
+                const wordMesh = createGujaratiWord3D(wordText, idx, true);
+                const angle = (idx / targetWords.length) * Math.PI * 2;
+                const radius = 12 + (idx % 3) * 8;
+                wordMesh.position.set(Math.cos(angle) * radius, 2.2, Math.sin(angle) * radius - 5);
+                wordMesh.userData.initialPos.copy(wordMesh.position);
+                scene.add(wordMesh);
+                wordObjects.push(wordMesh);
+            });
+
+            decoys.forEach((wordText, idx) => {
+                const mesh = createGujaratiWord3D(wordText, idx, false);
+                mesh.position.set((Math.random() - 0.5) * 60, 2.0, (Math.random() - 0.5) * 60);
+                mesh.userData.initialPos.copy(mesh.position);
+                scene.add(mesh);
+                wordObjects.push(mesh);
+            });
+        }
+
+        // --- 6. CONTROLS & INPUT ---
+        const keys = { w: false, a: false, s: false, d: false };
+        let moveVector = { x: 0, y: 0 };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = true;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = true;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = true;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
+            if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
+            if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
+            if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
+        });
+
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickKnob = document.getElementById('joystick-knob');
+        let isJoystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+
+        joystickZone.addEventListener('touchstart', (e) => {
+            isJoystickActive = true;
+            const touch = e.touches[0];
+            const rect = joystickZone.getBoundingClientRect();
+            joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            updateJoystick(touch.clientX, touch.clientY);
+        });
+
+        joystickZone.addEventListener('touchmove', (e) => {
+            if (!isJoystickActive) return;
+            updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        function resetJoystick() {
+            isJoystickActive = false;
+            moveVector = { x: 0, y: 0 };
+            joystickKnob.style.transform = `translate(0px, 0px)`;
+        }
+
+        joystickZone.addEventListener('touchend', resetJoystick);
+        joystickZone.addEventListener('touchcancel', resetJoystick);
+
+        function updateJoystick(clientX, clientY) {
+            const maxDist = 30;
+            let dx = clientX - joystickCenter.x;
+            let dy = clientY - joystickCenter.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > maxDist) {
+                dx = (dx / dist) * maxDist;
+                dy = (dy / dist) * maxDist;
+            }
+
+            joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+            moveVector.x = dx / maxDist;
+            moveVector.y = dy / maxDist;
+        }
+
+        let cameraAngleY = 0;
+        let cameraAngleX = 0.38;
+        let isDraggingCamera = false;
+        let prevTouch = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', (e) => {
+            if (e.clientY > window.innerHeight - 110 && e.clientX < 110) return;
+            isDraggingCamera = true;
+            prevTouch = { x: e.clientX, y: e.clientY };
+            checkClickCollect(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDraggingCamera) return;
+            const dx = e.clientX - prevTouch.x;
+            const dy = e.clientY - prevTouch.y;
+            cameraAngleY -= dx * 0.005;
+            cameraAngleX = Math.max(0.12, Math.min(0.85, cameraAngleX + dy * 0.0035));
+            prevTouch = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('mouseup', () => isDraggingCamera = false);
+
+        window.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            if (touch.clientY > window.innerHeight - 110 && touch.clientX < 110) return;
+            isDraggingCamera = true;
+            prevTouch = { x: touch.clientX, y: touch.clientY };
+            checkClickCollect(touch.clientX, touch.clientY);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDraggingCamera) return;
+            const touch = e.touches[0];
+            const dx = touch.clientX - prevTouch.x;
+            const dy = touch.clientY - prevTouch.y;
+            cameraAngleY -= dx * 0.006;
+            cameraAngleX = Math.max(0.12, Math.min(0.85, cameraAngleX + dy * 0.004));
+            prevTouch = { x: touch.clientX, y: touch.clientY };
+        });
+
+        window.addEventListener('touchend', () => isDraggingCamera = false);
+
+        function checkClickCollect(clientX, clientY) {
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(wordObjects, true);
+
+            if (intersects.length > 0) {
+                let hitObj = intersects[0].object;
+                while (hitObj.parent && !hitObj.userData.word) {
+                    hitObj = hitObj.parent;
+                }
+                if (hitObj && hitObj.visible) {
+                    tryCollectWord(hitObj);
+                }
+            }
+        }
+
+        // --- 7. COLLECTION LOGIC & HUD UPDATES ---
+        function showToast(text) {
+            const toast = document.getElementById('toast-msg');
+            toast.innerText = text;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2400);
+        }
+
+        function changeDefinitionFromSelect(val) {
+            currentDefKey = val;
+            buildEnvironment(definitionsData[val].theme);
+            spawnDefinitionWords();
+            resetLevelState();
+        }
+
+        function changeLevelFromSelect(val) {
+            currentLevel = parseInt(val, 10);
+            resetLevelState();
+        }
+
+        function updateHUD() {
+            const targetSeq = definitionsData[currentDefKey].targetSequence;
+            document.getElementById('progress-count').innerText = `${currentIndex} / ${targetSeq.length}`;
+            document.getElementById('level-select').value = currentLevel;
+            document.getElementById('def-select').value = currentDefKey;
+
+            const htmlTags = collectedWords.map(w => `<span class="collected-tag">${w}</span>`).join(' ');
+            document.getElementById('current-sentence').innerHTML = htmlTags || 'હજી શરૂઆત નથી કરી...';
+
+            if (currentIndex < targetSeq.length) {
+                if (currentLevel >= 3) {
+                    document.getElementById('next-word-highlight').innerText = "??? (યાદ કરીને શોધો)";
+                    document.getElementById('compass-text-hint').innerText = "(તીર છુપાયેલ છે)";
+                    document.getElementById('compass-widget').style.display = 'none';
+                } else {
+                    document.getElementById('next-word-highlight').innerText = targetSeq[currentIndex];
+                    document.getElementById('compass-text-hint').innerText = "(તીર દશા દર્શાવે છે ↗️)";
+                    document.getElementById('compass-widget').style.display = 'flex';
+                }
+            } else {
+                document.getElementById('next-word-highlight').innerText = "પૂર્ણ!";
+                triggerWinScreen();
+            }
+        }
+
+        function tryCollectWord(item) {
+            if (isProcessingPenalty) return;
+
+            if (currentLevel === 5 && !item.userData.isRevealed) return;
+
+            const targetSeq = definitionsData[currentDefKey].targetSequence;
+            const wordFound = item.userData.word;
+
+            if (item.userData.isTarget && wordFound === targetSeq[currentIndex]) {
+                collectedWords.push(wordFound);
+                currentIndex++;
+                item.visible = false;
+                updateHUD();
+            } else {
+                if (currentLevel >= 2 && collectedWords.length > 0) {
+                    isProcessingPenalty = true;
+
+                    const droppedWordText = collectedWords.pop();
+                    currentIndex = Math.max(0, currentIndex - 1);
+
+                    const droppedMesh = wordObjects.find(w => w.userData.word === droppedWordText && w.userData.isTarget && !w.visible);
+                    if (droppedMesh) {
+                        droppedMesh.visible = true;
+                    }
+
+                    showToast(`⚠️ ખોટો શબ્દ! ફક્ત છેલ્લો શબ્દ "${droppedWordText}" પાછો જમીન પર ફેંકાયો!`);
+
+                    setTimeout(() => { isProcessingPenalty = false; }, 1500);
+                } else {
+                    isProcessingPenalty = true;
+                    showToast(`ખોટો શબ્દ: "${wordFound}"! સાચો ક્રમ અનુસરો.`);
+                    setTimeout(() => { isProcessingPenalty = false; }, 1500);
+                }
+                updateHUD();
+            }
+        }
+
+        function triggerWinScreen() {
+            const winScreen = document.getElementById('win-screen');
+            const winHeading = document.getElementById('win-heading');
+            const winFullDef = document.getElementById('win-full-def');
+            const winSubtext = document.getElementById('win-subtext');
+            const nextBtn = document.getElementById('next-lvl-btn');
+
+            winFullDef.innerText = definitionsData[currentDefKey].fullText;
+
+            if (currentLevel === 1) {
+                winHeading.innerText = "👻 લેવલ ૧ પૂર્ણ થયું!";
+                winSubtext.innerText = "લેવલ ૨: હવે ખોટો શબ્દ અડવાથી એક ભેગો થયેલો શબ્દ પાછો જમીન પર પડી જશે!";
+                nextBtn.innerText = "લેવલ ૨ શરૂ કરો ➔";
+            } else if (currentLevel === 2) {
+                winHeading.innerText = "🔥 લેવલ ૨ પૂર્ણ થયું!";
+                winSubtext.innerText = "લેવલ ૩: હવે આગામી શબ્દની હિન્ટ અને તીર દેખાશે નહીં!";
+                nextBtn.innerText = "લેવલ ૩ શરૂ કરો ➔";
+            } else if (currentLevel === 3) {
+                winHeading.innerText = "⚡ લેવલ ૩ પૂર્ણ થયું!";
+                winSubtext.innerText = "લેવલ ૪: વધુ પડકારજનક શબ્દસ્થાન અને દંડ સાથે આગળ વધો!";
+                nextBtn.innerText = "લેવલ ૪ શરૂ કરો ➔";
+            } else if (currentLevel === 4) {
+                winHeading.innerText = "🌙 લેવલ ૪ પૂર્ણ થયું!";
+                winSubtext.innerText = "લેવલ ૫ (અંતિમ): ફર્નિચર/અવરોધો, છુપાયેલા શબ્દો અને શૂન્ય હિન્ટ સાથે રમો!";
+                nextBtn.innerText = "લેવલ ૫ શરૂ કરો (માસ્ટર ચેલેન્જ) ➔";
+            } else {
+                winHeading.innerText = "🏆 અલ્ટીમેટ વિજેતા! વ્યાખ્યા સિદ્ધ થઈ!";
+                winSubtext.innerText = "તમે આ વ્યાખ્યા સંપૂર્ણપણે શીખી લીધી છે!";
+                nextBtn.innerText = "ફરીથી રમો 🔄";
+            }
+
+            winScreen.style.display = 'flex';
+        }
+
+        function nextLevel() {
+            document.getElementById('win-screen').style.display = 'none';
+            if (currentLevel < 5) {
+                currentLevel++;
+            } else {
+                currentLevel = 1;
+            }
+            resetLevelState();
+        }
+
+        function resetLevelState() {
+            currentIndex = 0;
+            collectedWords = [];
+            isProcessingPenalty = false;
+
+            document.getElementById('level-select').value = currentLevel;
+            if (currentLevel === 1) document.getElementById('level-title').innerText = "સાચી વ્યાખ્યા શોધો";
+            if (currentLevel === 2) document.getElementById('level-title').innerText = "ખોટા શબ્દથી શબ્દ ગુમાવવો";
+            if (currentLevel === 3) document.getElementById('level-title').innerText = "યાદશક્તિ ટેસ્ટ (કોઈ હિન્ટ નહીં)";
+            if (currentLevel === 4) document.getElementById('level-title').innerText = "કઠિન ભૂતિયા વર્ગખંડ";
+            if (currentLevel === 5) document.getElementById('level-title').innerText = "લેવલ ૫: અવરોધો અને છુપાયેલા શબ્દો";
+
+            obstacleGroup.visible = (currentLevel === 5);
+
+            wordObjects.forEach(mesh => {
+                mesh.visible = true;
+                if (currentLevel === 5) {
+                    mesh.userData.isRevealed = false;
+                    mesh.userData.drawCard(false, "???");
+                    mesh.userData.texture.needsUpdate = true;
+                } else {
+                    mesh.userData.isRevealed = true;
+                    mesh.userData.drawCard(true, mesh.userData.word);
+                    mesh.userData.texture.needsUpdate = true;
+                }
+            });
+
+            avatarGroup.position.set(0, 0.2, 20);
+            updateHUD();
+        }
+
+        // --- 8. LEVEL 5 OBSTACLES ---
+        const deskMat = new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.8 });
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0x222226, roughness: 0.5, metalness: 0.8 });
+
+        function createDeskChairPair(x, z) {
+            const deskGroup = new THREE.Group();
+            deskGroup.position.set(x, 0, z);
+
+            const top = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 1.4), deskMat);
+            top.position.y = 1.3;
+            deskGroup.add(top);
+
+            [-1.0, 1.0].forEach(lx => {
+                [-0.5, 0.5].forEach(lz => {
+                    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3), metalMat);
+                    leg.position.set(lx, 0.65, lz);
+                    deskGroup.add(leg);
+                });
+            });
+
+            obstacleGroup.add(deskGroup);
+            obstacleColliders.push({ x: x, z: z, radius: 1.8 });
+        }
+
+        for (let row = -2; row <= 2; row++) {
+            for (let col = -2; col <= 2; col++) {
+                if (row === 0 && col === 0) continue;
+                createDeskChairPair(col * 10, row * 10 - 5);
+            }
+        }
+        obstacleGroup.visible = false;
+
+        // --- 9. MAIN ANIMATION & RENDERING LOOP ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            flickeringLights.forEach((light, i) => {
+                light.intensity = 1.8 + Math.sin(time * 10 + i) * 0.3;
+            });
+
+            let moveX = moveVector.x;
+            let moveZ = moveVector.y;
+
+            if (keys.w) moveZ = -1;
+            if (keys.s) moveZ = 1;
+            if (keys.a) moveX = -1;
+            if (keys.d) moveX = 1;
+
+            const isMoving = (moveX !== 0 || moveZ !== 0);
+
+            if (isMoving) {
+                const speed = 8.5 * delta;
+                const forward = new THREE.Vector3(-Math.sin(cameraAngleY), 0, -Math.cos(cameraAngleY)).normalize();
+                const right = new THREE.Vector3(Math.cos(cameraAngleY), 0, -Math.sin(cameraAngleY)).normalize();
+
+                const nextPos = avatarGroup.position.clone();
+                nextPos.addScaledVector(forward, -moveZ * speed);
+                nextPos.addScaledVector(right, moveX * speed);
+
+                let canMove = true;
+                if (currentLevel === 5) {
+                    for (let obs of obstacleColliders) {
+                        const dist = Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z);
+                        if (dist < obs.radius) {
+                            canMove = false; break;
+                        }
+                    }
+                }
+
+                if (canMove) {
+                    avatarGroup.position.copy(nextPos);
+                }
+
+                // Character rotation: Back faces camera when moving forward away from camera
+                const moveAngle = Math.atan2(-moveX, -moveZ) + cameraAngleY;
+                avatarGroup.rotation.y = moveAngle;
+
+                avatarGroup.position.x = Math.max(-38, Math.min(38, avatarGroup.position.x));
+                avatarGroup.position.z = Math.max(-38, Math.min(38, avatarGroup.position.z));
+
+                leftArmGroup.rotation.x = Math.sin(time * 10) * 0.45;
+                rightArmGroup.rotation.x = -Math.sin(time * 10) * 0.45;
+                leftLegGroup.rotation.x = -Math.sin(time * 10) * 0.55;
+                rightLegGroup.rotation.x = Math.sin(time * 10) * 0.55;
+                slothCape.rotation.x = 0.22 + Math.sin(time * 12) * 0.12;
+            } else {
+                leftArmGroup.rotation.x = Math.sin(time * 2) * 0.08;
+                rightArmGroup.rotation.x = -Math.sin(time * 2) * 0.08;
+                leftLegGroup.rotation.x = 0; rightLegGroup.rotation.x = 0;
+                slothCape.rotation.x = 0.22 + Math.sin(time * 3) * 0.04;
+            }
+
+            avatarGroup.position.y = 0.2 + Math.abs(Math.sin(time * 8)) * (isMoving ? 0.14 : 0.04);
+
+            const camDist = 9.0;
+            const camX = avatarGroup.position.x + camDist * Math.sin(cameraAngleY) * Math.cos(cameraAngleX);
+            const camY = avatarGroup.position.y + camDist * Math.sin(cameraAngleX) + 1.4;
+            const camZ = avatarGroup.position.z + camDist * Math.cos(cameraAngleY) * Math.cos(cameraAngleX);
+
+            camera.position.set(camX, camY, camZ);
+            camera.lookAt(avatarGroup.position.x, avatarGroup.position.y + 1.2, avatarGroup.position.z);
+
+            const targetSeq = definitionsData[currentDefKey].targetSequence;
+            let targetObject = null;
+
+            wordObjects.forEach((item, index) => {
+                if (!item.visible) return;
+
+                item.lookAt(camera.position);
+                item.position.y = 2.2 + Math.sin(time * 2.8 + index) * 0.25;
+
+                if (item.userData.isTarget && item.userData.word === targetSeq[currentIndex]) {
+                    targetObject = item;
+                }
+
+                const distToPlayer = item.position.distanceTo(avatarGroup.position);
+
+                if (currentLevel === 5) {
+                    if (distToPlayer < 6.5 && !item.userData.isRevealed) {
+                        item.userData.isRevealed = true;
+                        item.userData.drawCard(true, item.userData.word);
+                        item.userData.texture.needsUpdate = true;
+                    }
+                }
+
+                if (distToPlayer < 3.2) {
+                    tryCollectWord(item);
+                }
+            });
+
+            if (targetObject && currentLevel < 3) {
+                const dx = targetObject.position.x - avatarGroup.position.x;
+                const dz = targetObject.position.z - avatarGroup.position.z;
+
+                let targetAngle = Math.atan2(dx, dz);
+                let diffAngle = targetAngle - cameraAngleY;
+
+                const compassArrow = document.getElementById('compass-arrow');
+                if (compassArrow) {
+                    compassArrow.style.transform = `rotate(${diffAngle * (180 / Math.PI)}deg)`;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = function() {
+            buildEnvironment('school');
+            spawnDefinitionWords();
+            updateHUD();
+            animate();
+        };
+    </script>
+</body>
+</html>
+```
